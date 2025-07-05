@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Formulario de Planes de Salud</title>
+  <style>
+    label { display: block; margin: 10px 0 5px; }
+    .hidden { display: none; }
+    .success { margin-top: 15px; color: green; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <form id="form">
+
+    <label>Nombre*:
+      <input type="text" name="nombre" required />
+    </label>
+
+    <label>Teléfono*:
+      <input type="text" name="telefono" required />
+    </label>
+
+    <label>Mail:
+      <input type="email" name="mail" />
+    </label>
+
+    <label>Edad*:
+      <input type="number" name="edad" required min="0" />
+    </label>
+
+    <label>Zona*:
+      <select name="zona" id="zona" required>
+        <option value="">-- Seleccioná una zona --</option>
+        <option value="Norte">Zona Norte</option>
+        <option value="Oeste">Zona Oeste</option>
+        <option value="Sur">Zona Sur</option>
+        <option value="Capital Federal">Capital Federal</option>
+      </select>
+    </label>
+
+    <label>Localidad*:
+      <select name="localidad" id="localidad" required disabled>
+        <option value="">-- Seleccioná una localidad --</option>
+      </select>
+    </label>
+
+    <label>Tipo de plan*:</label>
+    <label><input type="radio" name="tipo_plan" value="individual" required /> Individual</label>
+    <label><input type="radio" name="tipo_plan" value="familiar" required /> Familiar</label>
+
+    <div id="familiarFields" class="hidden">
+      <label>Cantidad de integrantes*:
+        <input type="number" name="integrantes" min="1" />
+      </label>
+    </div>
+
+    <label>Tipo de cobertura*:</label>
+    <label><input type="checkbox" name="cobertura" value="particular" /> Particular</label>
+    <label><input type="checkbox" name="cobertura" value="monotributo" /> Monotributo</label>
+    <label><input type="checkbox" name="cobertura" value="recibo" /> Recibo de sueldo</label>
+
+    <label>Clínica o sanatorio de preferencia:
+      <input type="text" name="clinica" />
+    </label>
+
+    <label>Comentarios adicionales:
+      <textarea name="comentarios"></textarea>
+    </label>
+
+    <button type="submit">Enviar</button>
+  </form>
+
+  <div id="success" class="success"></div>
+
+  <script>
+    const form = document.getElementById("form");
+    const familiarFields = document.getElementById("familiarFields");
+    const zonaSelect = document.getElementById("zona");
+    const localidadSelect = document.getElementById("localidad");
+    const success = document.getElementById("success");
+
+    const localidadesPorZona = {
+      "Norte": ["Tigre", "San Isidro", "Vicente López"],
+      "Oeste": ["Morón", "Ituzaingó", "Merlo"],
+      "Sur": ["Lanús", "Avellaneda", "Lomas de Zamora"],
+      "Capital Federal": ["Balvanera", "Palermo", "Caballito", "Belgrano", "Villa Urquiza"]
+    };
+
+    zonaSelect.addEventListener("change", () => {
+      const zona = zonaSelect.value;
+      localidadSelect.innerHTML = '<option value="">-- Seleccioná una localidad --</option>';
+      if (localidadesPorZona[zona]) {
+        localidadesPorZona[zona].forEach(loc => {
+          const option = document.createElement("option");
+          option.value = loc;
+          option.textContent = loc;
+          localidadSelect.appendChild(option);
+        });
+        localidadSelect.disabled = false;
+      } else {
+        localidadSelect.disabled = true;
+      }
+    });
+
+    form.tipo_plan.forEach(input => {
+      input.addEventListener("change", () => {
+        const mostrar = input.value === "familiar" && input.checked;
+        familiarFields.classList.toggle("hidden", !mostrar);
+        form.integrantes.required = mostrar;
+      });
+    });
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const obj = {};
+      formData.forEach((value, key) => {
+        if (obj[key]) {
+          obj[key] += `,${value}`;
+        } else {
+          obj[key] = value;
+        }
+      });
+
+      fetch("https://script.google.com/macros/s/AKfycbwqWnOdOezjvZwit4DprX83boua0C8I1vs9AZ6PVL1n04TgZyTlcUIONV4eZok24GvDmg/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj)
+      })
+      .then(res => res.json())
+      .then(resp => {
+        if (resp.status === "ok") {
+          success.innerText = `✅ ¡Gracias ${form.nombre.value}! Un asesor se estará contactando con vos.`;
+          form.reset();
+          localidadSelect.disabled = true;
+          familiarFields.classList.add("hidden");
+        } else {
+          success.innerText = "⚠️ El servidor respondió con un error.";
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        success.innerText = "❌ Error de conexión.";
+      });
+    });
+  </script>
+</body>
+</html>
+
