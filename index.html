@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulario Prepaga</title>
+</head>
+<body>
+  <h1>Formulario de Contacto</h1>
+  <form id="miFormulario">
+    <label>Nombre: <input type="text" name="nombre" required></label><br>
+    <label>Teléfono: <input type="text" name="telefono" required></label><br>
+    <label>Email: <input type="email" name="mail" required></label><br>
+    <label>Edad: <input type="number" name="edad"></label><br>
+    <label>Zona: <input type="text" name="zona"></label><br>
+    <label>Localidad: <input type="text" name="localidad"></label><br>
+    <label>Tipo de Plan: <input type="text" name="tipo_plan"></label><br>
+    <label>Integrantes: <input type="number" name="integrantes"></label><br>
+    <label>Cobertura: <input type="text" name="cobertura"></label><br>
+    <label>Clínica: <input type="text" name="clinica"></label><br>
+    <label>Comentarios:<br>
+      <textarea name="comentarios"></textarea>
+    </label><br><br>
+
+    <button type="submit">Enviar</button>
+  </form>
+
+  <p id="respuesta"></p>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyjeAUuVTEyRUeMcvCOgCGdRkP4xEvAPqEPPHjK-_w-ld3E7ivUHEPs_fFNeuftwpuGew/exec";
+
+    document.getElementById("miFormulario").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = {
+        nombre: e.target.nombre.value,
+        telefono: e.target.telefono.value,
+        mail: e.target.mail.value,
+        edad: e.target.edad.value,
+        zona: e.target.zona.value,
+        localidad: e.target.localidad.value,
+        tipo_plan: e.target.tipo_plan.value,
+        integrantes: e.target.integrantes.value,
+        cobertura: e.target.cobertura.value,
+        clinica: e.target.clinica.value,
+        comentarios: e.target.comentarios.value
+      };
+
+      try {
+        const res = await fetch(scriptURL, {
+          method: "POST",
+          body: JSON.stringify(formData),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        const data = await res.json();
+        document.getElementById("respuesta").textContent = data.status === "ok" 
+          ? "✅ Datos enviados correctamente"
+          : "❌ Error: " + data.message;
+      } catch (err) {
+        document.getElementById("respuesta").textContent = "⚠️ No se pudo conectar con el servidor";
+      }
+    });
+  </script>
+</body>
+</html>
