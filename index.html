@@ -2,43 +2,23 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Formulario Prepaga</title>
+  <title>Formulario Leads Prepaga</title>
 </head>
 <body>
-  <h2>Formulario Leads Prepaga</h2>
+  <h1>Formulario Leads Prepaga</h1>
+
   <form id="miFormulario">
-    <label>Nombre:</label>
-    <input type="text" id="nombre" required><br>
-
-    <label>Teléfono:</label>
-    <input type="text" id="telefono" required><br>
-
-    <label>Email:</label>
-    <input type="email" id="mail" required><br>
-
-    <label>Edad:</label>
-    <input type="number" id="edad"><br>
-
-    <label>Zona:</label>
-    <input type="text" id="zona"><br>
-
-    <label>Localidad:</label>
-    <input type="text" id="localidad"><br>
-
-    <label>Tipo de plan:</label>
-    <input type="text" id="tipo_plan"><br>
-
-    <label>Integrantes:</label>
-    <input type="number" id="integrantes"><br>
-
-    <label>Cobertura:</label>
-    <input type="text" id="cobertura"><br>
-
-    <label>Clínica:</label>
-    <input type="text" id="clinica"><br>
-
-    <label>Comentarios:</label>
-    <textarea id="comentarios"></textarea><br>
+    <label>Nombre: <input type="text" name="nombre" required></label><br>
+    <label>Teléfono: <input type="text" name="telefono" required></label><br>
+    <label>Email: <input type="email" name="mail"></label><br>
+    <label>Edad: <input type="number" name="edad"></label><br>
+    <label>Zona: <input type="text" name="zona"></label><br>
+    <label>Localidad: <input type="text" name="localidad"></label><br>
+    <label>Tipo Plan: <input type="text" name="tipo_plan"></label><br>
+    <label>Integrantes: <input type="number" name="integrantes"></label><br>
+    <label>Cobertura: <input type="text" name="cobertura"></label><br>
+    <label>Clínica: <input type="text" name="clinica"></label><br>
+    <label>Comentarios: <textarea name="comentarios"></textarea></label><br>
 
     <button type="submit">Enviar</button>
   </form>
@@ -47,19 +27,9 @@
     document.getElementById("miFormulario").addEventListener("submit", function(e) {
       e.preventDefault();
 
-      const data = {
-        nombre: document.getElementById("nombre").value,
-        telefono: document.getElementById("telefono").value,
-        mail: document.getElementById("mail").value,
-        edad: document.getElementById("edad").value,
-        zona: document.getElementById("zona").value,
-        localidad: document.getElementById("localidad").value,
-        tipo_plan: document.getElementById("tipo_plan").value,
-        integrantes: document.getElementById("integrantes").value,
-        cobertura: document.getElementById("cobertura").value,
-        clinica: document.getElementById("clinica").value,
-        comentarios: document.getElementById("comentarios").value
-      };
+      const formData = new FormData(this);
+      const data = {};
+      formData.forEach((value, key) => data[key] = value);
 
       fetch("https://script.google.com/macros/s/AKfycbyjeAUuVTEyRUeMcvCOgCGdRkP4xEvAPqEPPHjK-_w-ld3E7ivUHEPs_fFNeuftwpuGew/exec", {
         method: "POST",
@@ -68,13 +38,13 @@
           "Content-Type": "application/json"
         }
       })
-      .then(res => res.json())
-      .then(respuesta => {
-        alert("✅ Datos enviados correctamente");
-        console.log(respuesta);
+      .then(async res => {
+        const text = await res.text();
+        alert("📩 Respuesta del servidor:\n" + text);
+        console.log("Respuesta:", text);
       })
       .catch(err => {
-        alert("❌ Error al enviar los datos");
+        alert("❌ Error de red:\n" + err);
         console.error(err);
       });
     });
